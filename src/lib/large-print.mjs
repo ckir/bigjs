@@ -12,6 +12,7 @@ class LargePrint {
 
     static #_defaultFontsFolderPath = path.resolve(__dirname + path.join('..', 'assets', 'fonts', 'regular'))
     static #_loadedFonts = {}
+    static #_fontSizes = {}
     static #_canvas = createCanvas(1920, 100)
     static #_ctx = LargePrint.#_canvas.getContext('2d')
 
@@ -53,6 +54,8 @@ class LargePrint {
         }
 
         const font = LargePrint.#_loadFont(fontRealpath)
+        const rowWidth = font.getAdvanceWidth(text, fontSize)
+        LargePrint.#_ctx.canvas.width = rowWidth
         LargePrint.#_ctx.clearRect(0, 0, LargePrint.#_ctx.canvas.width, LargePrint.#_ctx.canvas.height)
         applyStyles()
         const path = font.getPath(text, 0, 60, fontSize)
@@ -68,17 +71,21 @@ class LargePrint {
 
         const defaults = {
             fontFile: path.join(LargePrint.#_defaultFontsFolderPath, 'Acme 9 Regular Xtnd.ttf'),
-            wordWrap: 'none', // 'none' | 'word' | 'letter',
-            textAlign: 'left' // 'left' | 'center' | 'right
+            wordWrap: 'letter', // 'none' | 'word' | 'letter',
+            textAlign: 'left', // 'left' | 'center' | 'right
+            textScale: 'width' // 'height' | 'width'
         }
         style = { ...defaults, ...style }
 
         let rows = []
 
-        const calculateFontSize = (text, fontRealpath, maxOutputHeight) => {
+        const getFontSizeForHeight = (fontRealpath, maxOutputHeight) => {
 
+            let text = 'jqWM'
+
+            if ((fontRealpath in LargePrint.#_fontSizes) && (maxOutputHeight in LargePrint.#_fontSizes[fontRealpath])) return LargePrint.#_fontSizes[fontRealpath][maxOutputHeight]
             // Converts returns in spaces, removes double spaces
-            text = text.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ')
+            // text = text.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ')
             let fontSize = maxOutputHeight + 1
             let outputHeight = 0
             let lines = ''
@@ -87,9 +94,42 @@ class LargePrint {
                 lines = LargePrint._drawLine(fontRealpath, fontSize, text)
                 outputHeight = lines.split(os.EOL).length
             } while (outputHeight >= maxOutputHeight)
-            return { fontSize: fontSize, lines: lines }
+            LargePrint.#_fontSizes[fontRealpath] = {[maxOutputHeight]: fontSize}
+            return fontSize
 
         }
+
+        const getFontSizeForWidth = (text, font, maxOutputWidth) => {
+
+            let fontSize = 15 //Math.ceil(maxOutputWidth / 3)
+            let lineWidth = 0
+            do {
+                fontSize--
+                if (fontSize < 9) break // Nothing renders well bellow 8px
+                lineWidth = font.getAdvanceWidth(text, fontSize) // This corresponds to canvas2dContext.measureText(text).width
+            } while (lineWidth > maxOutputWidth)
+            return fontSize
+
+        }
+
+        const formatLines = (rows, style, maxOutputWidth) => {
+
+            rows.forEach((row, index) => {
+                let lines = row.split(os.EOL)
+                const longest = lines.reduce((a, b) => a.length > b.length ? a : b, '').length
+                // Apply style
+                if (style.textAlign == 'center') {
+                    lines = lines.map(line => { return ' '.repeat((maxOutputWidth - longest) / 2) + line })
+                    rows[index] = lines.join(os.EOL)
+                }
+                if (style.textAlign == 'right') {
+                    lines = lines.map(line => { return line.padStart(maxOutputWidth) })
+                    rows[index] = lines.join(os.EOL)
+                }
+            })
+
+            return rows
+        }        
 
         const splitCharacters = (text, font, fontSize, maxOutputWidth) => {
 
@@ -115,25 +155,6 @@ class LargePrint {
             rows.push(row)
             return rows
 
-        }
-
-        const formatLines = (rows, style, maxOutputWidth) => {
-
-            rows.forEach((row, index) => {
-                lines = row.split(os.EOL)
-                const longest = lines.reduce((a, b) => a.length > b.length ? a : b, '').length
-                // Apply style
-                if (style.textAlign == 'center') {
-                    lines = lines.map(line => { return ' '.repeat((maxOutputWidth - longest) / 2) + line })
-                    rows[index] = lines.join(os.EOL)
-                }
-                if (style.textAlign == 'right') {
-                    lines = lines.map(line => { return line.padStart(maxOutputWidth) })
-                    rows[index] = lines.join(os.EOL)
-                }
-            })
-
-            return rows
         }
 
         const splitWords = (text, font, fontSize, maxOutputWidth) => {
@@ -184,12 +205,21 @@ class LargePrint {
         }
 
         const font = LargePrint.#_loadFont(style.fontFile)
-        let { fontSize, lines } = calculateFontSize(text, style.fontFile, maxOutputHeight)
+        let fontSize = 0
+        
+        if (style.textScale == 'height') {
+            fontSize = getFontSizeForHeight(style.fontFile, maxOutputHeight)
+        } else {
+            fontSize = getFontSizeForWidth(text, font, maxOutputWidth)
+        }
 
         if (style.wordWrap == 'none') {
-            lines = lines.split(os.EOL)
-            const longest = lines.reduce((a, b) => a.length > b.length ? a : b, '').length
+            let lines = null
+            rows = splitCharacters(text, font, fontSize, maxOutputWidth)
+            rows = rows.map((row) => { return LargePrint._drawLine(style.fontFile, fontSize, row) })         
             // Truncate output if longer than maxOutputWidth
+            lines = rows[0].split(os.EOL)
+            const longest = lines.reduce((a, b) => a.length > b.length ? a : b, '').length
             if (longest > maxOutputWidth) {
                 lines = lines.map(line => { return line.substring(0, maxOutputWidth) })
             }
@@ -233,12 +263,26 @@ class LargePrint {
 
 export default LargePrint
 
-// LargePrint.printFontSamples('Hello world SjqWM', '/home/user/blessed-bigtext/src/assets/fonts/regular', 12)
-// const style = {
-//     // fontFile: '/home/user/blessed-bigtext/src/assets/fonts/regular/PixelOperatorMonoHB8.ttf',
-//     wordWrap: 'word', // 'none' | 'word' | 'letter',
-//     textAlign: 'center' // 'left' | 'center' | 'right
-// }
-// // const output = ConsolePrintBase.print('Ελληνικά\nThe quick brown fox jumps over the lazy dog', 211, 14, style)
-// const output = LargePrint.print('Hello ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 World Ελληνικά\nThe quick brown fox jumps over the lazy dog', 211, 14, style)
-// output.forEach((line) => console.log(line, '\n'))
+// const textScales = ['height', 'width']
+// const wordWraps = ['none', 'word', 'letter']
+// const textAligns = ['left', 'center', 'right']
+
+// textScales.forEach((textScale) => {
+//     wordWraps.forEach((wordWrap) => {
+//         textAligns.forEach((textAlign) => {
+//             const style = {
+//                 fontFile: path.join(path.resolve(__dirname + path.join('..', 'assets', 'fonts', 'regular')), 'Acme 9 Regular Xtnd.ttf'),
+//                 wordWrap: wordWrap,
+//                 textAlign: textAlign,
+//                 textScale: textScale
+//             }
+//             console.log(`textScale: [${textScale}] - wordWrap: [${wordWrap}] - textAlign: [${textAlign}]`)
+//             let output = LargePrint.print('Hello World', 211, 14, style)
+//             output.forEach((line) => console.log(line, '\n'))
+//             console.log(`textScale: [${textScale}] - wordWrap: [${wordWrap}] - textAlign: [${textAlign}]`)
+//             output = LargePrint.print('Ελληνικά\nThe quick brown fox jumps over the lazy dog', 211, 14, style)
+//             output.forEach((line) => console.log(line, '\n'))            
+//         })
+//     })
+// })
+

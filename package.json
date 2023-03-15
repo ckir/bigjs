@@ -2,7 +2,10 @@
   "name": "bigjs",
   "version": "1.0.0",
   "description": "Components and Utilities for large console printing",
-  "main": "index.js",
+  "main": "./index.mjs",
+  "exports": {
+    "import": "./index.mjs"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +26,7 @@
   "dependencies": {
     "@blessed/blessed-contrib": "^1.0.1",
     "@blessed/neo-blessed": "^1.0.0",
+    "canvas": "^2.11.0",
     "opentype.js": "^1.3.4"
   }
 }
