@@ -261,6 +261,7 @@ class LargePrint {
 
 }
 
+export {LargePrint}
 export default LargePrint
 
 // const textScales = ['height', 'width']
