@@ -19,6 +19,12 @@ class FigletPrint {
 
     }
 
+    static getFontInfo() {
+
+        return FigletPrint.#_figlet.getFontInfo()
+        
+    }
+
     static #_drawLine(text, font, removeEmptyLines = true, trim = true) {
 
         let lines = FigletPrint.#_figlet.write(text, font, removeEmptyLines, trim)
@@ -62,7 +68,7 @@ class FigletPrint {
             const rows = []
             let row = ''
             do {
-                let character = characters.splice(0, 1)
+                let character = characters.splice(0, 1)[0]
                 if (character == '\n') {
                     rows.push(row)
                     row = ''

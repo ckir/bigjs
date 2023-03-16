@@ -137,7 +137,7 @@ class LargePrint {
             const rows = []
             let row = ''
             do {
-                let character = characters.splice(0, 1)
+                let character = characters.splice(0, 1)[0]
                 if (character == '\n') {
                     rows.push(row)
                     row = ''

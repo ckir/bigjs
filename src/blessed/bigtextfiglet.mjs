@@ -4,7 +4,7 @@ import blessed from '@blessed/neo-blessed'
 var Node = blessed.Node
 var Box = blessed.Box
 
-
+import FigletPrint from '../lib/print-figlet.mjs'
 
 function BigTextFiglet(options) {
 
@@ -19,7 +19,7 @@ function BigTextFiglet(options) {
         height: 'shrink',
         // align: 'center',
         valign: 'middle',
-        content: 'Hello world!',
+        content: ' ',
         tags: true,
         border: {
             type: 'line'
@@ -27,15 +27,9 @@ function BigTextFiglet(options) {
         style: {
             fg: 'white',
             bg: 'black',
-            fontFamily: 'ANSI_Regular.flf',
-            fontStyle: 'normal',
-            fontWeight: 'normal',
-            fontVariant: 'normal',
-            fontSize: 'auto',
-            textAlign: 'left',
-            textBaseline: 'bottom',
-            textColor: 'black',
-            wordWrap: false
+            fontName: 'ANSI_Regular',
+            wordWrap: 'letter', // 'none' | 'word' | 'letter',
+            textAlign: 'left', // 'left' | 'center' | 'right
         }
     }
 
@@ -46,22 +40,13 @@ function BigTextFiglet(options) {
 
     this.on('attach', function () {
         self.calcSize();
-        const style = this.style
-        if (style.fontSize == 'auto') {
-            style.fontSize = this.height - 2
-        }
-        if (style.wordWrap === true) {
-            style.wordWrap = this.width - 2
-        }
-        this._canvas = new Print(this.text, style, 1)
-
     });
 
 }
 
 BigTextFiglet.prototype.__proto__ = Box.prototype;
 
-BigTextFiglet.prototype.type = 'bigtextfonts';
+BigTextFiglet.prototype.type = 'bigtextfiglet';
 
 BigTextFiglet.prototype.calcSize = function () {
     this.canvasSize = { width: this.width * 2 - 12, height: this.height * 4 };
@@ -70,16 +55,15 @@ BigTextFiglet.prototype.calcSize = function () {
 BigTextFiglet.prototype.setContent = function (content) {
     this.content = '';
     this.text = content || '';
-    if (this._canvas) {
-        this._canvas._text = content;
-    }
 };
 
 BigTextFiglet.prototype.render = function () {
     const currentBoxHeight = this.height - 1
     const currentBoxWidth = this.width - 2
+    const currentFontInfo = FigletPrint.getFontInfo()
+    const currentFontHeight = currentFontInfo.height
     // Box too small to draw
-    if ((currentBoxHeight < 8) || (currentBoxWidth < (this.text.length * 6))) {
+    if ((currentBoxHeight < currentFontHeight) || (currentBoxWidth < (this.text.length * 6))) {
         if (this.style.textAlign == 'center') {
             this.align = 'center'
         }
@@ -88,10 +72,8 @@ BigTextFiglet.prototype.render = function () {
     }
     
     this.align = 'left'
-    this._canvas._canvas.width = this.width - 2
-    this._canvas._canvas.height = this.height
-    let lines = this._canvas.print()
-    let linesArray = lines.split(os.EOL)
+    let lines = FigletPrint.print(this.text, this.width, this.options.style)
+    let linesArray = lines[0].split(os.EOL)
 
     let longest = linesArray.reduce((a, b) => a.length > b.length ? a : b, '');
     if (longest.length > (this.width - 2)) {

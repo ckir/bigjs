@@ -20,7 +20,7 @@ function BigTextFonts(options) {
         height: 'shrink',
         // align: 'center',
         valign: 'middle',
-        content: '',
+        content: ' ',
         tags: true,
         border: {
             type: 'line'
@@ -46,7 +46,7 @@ function BigTextFonts(options) {
     Box.call(this, this.options);
 
     this.on('attach', function () {
-        self.calcSize();
+        // self.calcSize();
         const style = this.style
         if (style.fontSize == 'auto') {
             style.fontSize = this.height - 2
@@ -54,8 +54,6 @@ function BigTextFonts(options) {
         if (style.wordWrap === true) {
             style.wordWrap = this.width - 2
         }
-        // this.content = LargePrint.print(this.text, this.width, this.height)[0]
-        // this._canvas = new Print(this.text, style, 1)
 
     });
 
@@ -65,9 +63,9 @@ BigTextFonts.prototype.__proto__ = Box.prototype;
 
 BigTextFonts.prototype.type = 'bigtextfonts';
 
-BigTextFonts.prototype.calcSize = function () {
-    this.canvasSize = { width: this.width * 2 - 12, height: this.height * 4 };
-};
+// BigTextFonts.prototype.calcSize = function () {
+//     this.canvasSize = { width: this.width * 2 - 12, height: this.height * 4 };
+// };
 
 BigTextFonts.prototype.setContent = function (content) {
     this.content = '';
@@ -88,7 +86,7 @@ BigTextFonts.prototype.render = function () {
     }
     
     this.align = 'left'
-    if (this.height > 10) {
+    if ((this.height) > 10 && (this.text.length > 0) ) {
         this.content = LargePrint.print(this.text, this.width - 2, this.height + 2)[0]
     } else {
         this.content = this.text
