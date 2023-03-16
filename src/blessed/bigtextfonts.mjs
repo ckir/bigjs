@@ -5,7 +5,7 @@ var Node = blessed.Node
 var Box = blessed.Box
 
 // import Print from './canvas-print.mjs';
-import LargePrint from '../lib/large-print.mjs'
+import LargePrint from '../lib/print-fonts.mjs'
 
 function BigTextFonts(options) {
 
@@ -20,7 +20,7 @@ function BigTextFonts(options) {
         height: 'shrink',
         // align: 'center',
         valign: 'middle',
-        content: 'Hello world!',
+        content: '',
         tags: true,
         border: {
             type: 'line'
