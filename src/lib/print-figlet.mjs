@@ -35,7 +35,7 @@ class FigletPrint {
     static print(text, maxOutputWidth, style = {}) {
 
         const defaults = {
-            fontName: 'ANSI_Regular',
+            fontName: 'ANSI Regular',
             wordWrap: 'letter', // 'none' | 'word' | 'letter',
             textAlign: 'left', // 'left' | 'center' | 'right
         }
