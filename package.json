@@ -7,6 +7,7 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.mjs",
+      "require": "./index.cjs",
       "default": "./index.mjs"
     }
   },
@@ -31,6 +32,7 @@
     "@blessed/blessed-contrib": "^1.0.1",
     "@blessed/neo-blessed": "^1.0.0",
     "canvas": "^2.11.0",
+    "make-synchronous": "^1.0.0",
     "opentype.js": "^1.3.4"
   }
 }

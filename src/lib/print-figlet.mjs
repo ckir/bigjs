@@ -11,7 +11,7 @@ import Figlet from './figlet-parser.mjs'
 class FigletPrint {
 
     static #_defaultFontsFolderPath = path.resolve(__dirname + path.join('..', 'assets', 'fonts', 'figlet'))
-    static #_figlet = new Figlet(FigletPrint.#_defaultFontsFolderPath, 'ANSI_Regular')
+    static #_figlet = new Figlet(FigletPrint.#_defaultFontsFolderPath, 'ANSI Regular')
 
     static getFontNames() {
 
