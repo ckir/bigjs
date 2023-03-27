@@ -5,7 +5,7 @@ var Node = blessed.Node
 var Box = blessed.Box
 
 // import Print from './canvas-print.mjs';
-import LargePrint from '../lib/print-fonts.mjs'
+import FontsPrint from '../lib/print-fonts.mjs'
 
 function BigTextFonts(options) {
 
@@ -87,7 +87,7 @@ BigTextFonts.prototype.render = function () {
     
     this.align = 'left'
     if ((this.height) > 10 && (this.text.length > 0) ) {
-        this.content = LargePrint.print(this.text, this.width - 2, this.height + 2)[0]
+        this.content = FontsPrint.print(this.text, this.width - 2, this.height + 2)[0]
     } else {
         this.content = this.text
     }

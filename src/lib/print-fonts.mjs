@@ -8,28 +8,28 @@ import { createCanvas } from 'canvas'
 import opentype from 'opentype.js'
 
 
-class LargePrint {
+class FontsPrint {
 
     static #_defaultFontsFolderPath = path.resolve(__dirname + path.join('..', 'assets', 'fonts', 'regular'))
     static #_loadedFonts = {}
     static #_fontSizes = {}
     static #_canvas = createCanvas(1920, 100)
-    static #_ctx = LargePrint.#_canvas.getContext('2d')
+    static #_ctx = FontsPrint.#_canvas.getContext('2d')
 
     static #_loadFont(fontRealpath) {
-        if (!LargePrint.#_loadedFonts[fontRealpath]) LargePrint.#_loadedFonts[fontRealpath] = opentype.loadSync(fontRealpath)
-        if (!LargePrint.#_loadedFonts[fontRealpath].supported) {
+        if (!FontsPrint.#_loadedFonts[fontRealpath]) FontsPrint.#_loadedFonts[fontRealpath] = opentype.loadSync(fontRealpath)
+        if (!FontsPrint.#_loadedFonts[fontRealpath].supported) {
             throw new ValueError(`${fontRealpath}: Font not supported`)
         }
-        return LargePrint.#_loadedFonts[fontRealpath]
+        return FontsPrint.#_loadedFonts[fontRealpath]
     }
 
     static _drawLine(fontRealpath, fontSize, text) {
 
         const applyStyles = () => {
-            LargePrint.#_ctx.patternQuality = 'best' // 'fast'|'good'|'best'|'nearest'|'bilinear'
-            LargePrint.#_ctx.quality = 'best'        // 'fast'|'good'|'best'|'nearest'|'bilinear'
-            LargePrint.#_ctx.antialias = 'gray'      // 'default'|'none'|'gray'|'subpixel'
+            FontsPrint.#_ctx.patternQuality = 'best' // 'fast'|'good'|'best'|'nearest'|'bilinear'
+            FontsPrint.#_ctx.quality = 'best'        // 'fast'|'good'|'best'|'nearest'|'bilinear'
+            FontsPrint.#_ctx.antialias = 'gray'      // 'default'|'none'|'gray'|'subpixel'
         }
 
         const toBitmapString = (canvas, ch = '#', removeEmptyLines = true, trim = true) => { // "█"
@@ -53,14 +53,14 @@ class LargePrint {
             return rows.join(os.EOL)
         }
 
-        const font = LargePrint.#_loadFont(fontRealpath)
+        const font = FontsPrint.#_loadFont(fontRealpath)
         const rowWidth = font.getAdvanceWidth(text, fontSize)
-        LargePrint.#_ctx.canvas.width = rowWidth
-        LargePrint.#_ctx.clearRect(0, 0, LargePrint.#_ctx.canvas.width, LargePrint.#_ctx.canvas.height)
+        FontsPrint.#_ctx.canvas.width = rowWidth
+        FontsPrint.#_ctx.clearRect(0, 0, FontsPrint.#_ctx.canvas.width, FontsPrint.#_ctx.canvas.height)
         applyStyles()
         const path = font.getPath(text, 0, 60, fontSize)
-        font.draw(LargePrint.#_ctx, text, 0, 60, fontSize)
-        const lines = toBitmapString(LargePrint.#_canvas)
+        font.draw(FontsPrint.#_ctx, text, 0, 60, fontSize)
+        const lines = toBitmapString(FontsPrint.#_canvas)
         // console.log(fontRealpath, lines.split(os.EOL).length)
         // console.log(lines)
         return lines
@@ -70,7 +70,7 @@ class LargePrint {
     static print(text, maxOutputWidth, maxOutputHeight, style = {}) {
 
         const defaults = {
-            fontFile: path.join(LargePrint.#_defaultFontsFolderPath, 'Acme 9 Regular Xtnd.ttf'),
+            fontFile: path.join(FontsPrint.#_defaultFontsFolderPath, 'Acme 9 Regular Xtnd.ttf'),
             wordWrap: 'letter', // 'none' | 'word' | 'letter',
             textAlign: 'left', // 'left' | 'center' | 'right
             textScale: 'width' // 'height' | 'width'
@@ -83,7 +83,7 @@ class LargePrint {
 
             let text = 'jqWM'
 
-            if ((fontRealpath in LargePrint.#_fontSizes) && (maxOutputHeight in LargePrint.#_fontSizes[fontRealpath])) return LargePrint.#_fontSizes[fontRealpath][maxOutputHeight]
+            if ((fontRealpath in FontsPrint.#_fontSizes) && (maxOutputHeight in FontsPrint.#_fontSizes[fontRealpath])) return FontsPrint.#_fontSizes[fontRealpath][maxOutputHeight]
             // Converts returns in spaces, removes double spaces
             // text = text.replace(/(\r\n|\n|\r)/gm, ' ').replace(/\s+/g, ' ')
             let fontSize = maxOutputHeight + 1
@@ -91,10 +91,10 @@ class LargePrint {
             let lines = ''
             do {
                 fontSize--
-                lines = LargePrint._drawLine(fontRealpath, fontSize, text)
+                lines = FontsPrint._drawLine(fontRealpath, fontSize, text)
                 outputHeight = lines.split(os.EOL).length
             } while (outputHeight >= maxOutputHeight)
-            LargePrint.#_fontSizes[fontRealpath] = {[maxOutputHeight]: fontSize}
+            FontsPrint.#_fontSizes[fontRealpath] = {[maxOutputHeight]: fontSize}
             return fontSize
 
         }
@@ -204,7 +204,7 @@ class LargePrint {
 
         }
 
-        const font = LargePrint.#_loadFont(style.fontFile)
+        const font = FontsPrint.#_loadFont(style.fontFile)
         let fontSize = 0
         
         if (style.textScale == 'height') {
@@ -216,7 +216,7 @@ class LargePrint {
         if (style.wordWrap == 'none') {
             let lines = null
             rows = splitCharacters(text, font, fontSize, maxOutputWidth)
-            rows = rows.map((row) => { return LargePrint._drawLine(style.fontFile, fontSize, row) })         
+            rows = rows.map((row) => { return FontsPrint._drawLine(style.fontFile, fontSize, row) })         
             // Truncate output if longer than maxOutputWidth
             lines = rows[0].split(os.EOL)
             const longest = lines.reduce((a, b) => a.length > b.length ? a : b, '').length
@@ -229,20 +229,20 @@ class LargePrint {
 
         if (style.wordWrap == 'letter') {
             rows = splitCharacters(text, font, fontSize, maxOutputWidth)
-            rows = rows.map((row) => { return LargePrint._drawLine(style.fontFile, fontSize, row) })
+            rows = rows.map((row) => { return FontsPrint._drawLine(style.fontFile, fontSize, row) })
             rows = formatLines(rows, style, maxOutputWidth)
             return rows
         }
 
         if (style.wordWrap == 'word') {
             rows = splitWords(text, font, fontSize, maxOutputWidth)
-            rows = rows.map((row) => { return LargePrint._drawLine(style.fontFile, fontSize, row) })
+            rows = rows.map((row) => { return FontsPrint._drawLine(style.fontFile, fontSize, row) })
             rows = formatLines(rows, style, maxOutputWidth)
             return rows
         }
     }
 
-    static printFontSamples(text, fontsFolderPath = LargePrint.#_defaultFontsFolderPath, fontSize = 8, maxOutputWidth = process.stdout.columns) {
+    static printFontSamples(text, fontsFolderPath = FontsPrint.#_defaultFontsFolderPath, fontSize = 8, maxOutputWidth = process.stdout.columns) {
 
         fontsFolderPath = path.resolve(fontsFolderPath)
 
@@ -250,7 +250,7 @@ class LargePrint {
         files.forEach(fontFile => {
             if ((!fontFile.toLowerCase().endsWith('.ttf')) && (!fontFile.toLowerCase().endsWith('.otf'))) return
             const fontRealpath = path.join(fontsFolderPath, fontFile)
-            let lines = LargePrint._drawLine(fontRealpath, fontSize, text).split(os.EOL)
+            let lines = FontsPrint._drawLine(fontRealpath, fontSize, text).split(os.EOL)
             console.log(`Font: [${fontFile}] - Font size: [${fontSize}] - Output Height: [${lines.length}]`)
             lines = lines.map(line => { return line.substring(0, maxOutputWidth) })
             console.log(lines.join(os.EOL))
@@ -261,8 +261,8 @@ class LargePrint {
 
 }
 
-export {LargePrint}
-export default LargePrint
+export {FontsPrint}
+export default FontsPrint
 
 // const textScales = ['height', 'width']
 // const wordWraps = ['none', 'word', 'letter']
